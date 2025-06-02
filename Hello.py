@@ -56,6 +56,16 @@ st.markdown(
     - Detailed clinical reasoning for code assignments
     - Export capabilities for selected codes and analysis results
     
+    ### 📝 Paper to Patient Note
+    Convert handwritten medical notes to digital text using advanced image understanding:
+    - Advanced OCR with medical terminology specialization
+    - Support for various handwriting styles and note formats
+    - Structured JSON analysis or clean text output options
+    - Quality assessment with legibility and confidence scoring
+    - Section identification and structure preservation
+    - Correction tracking for crossed-out or modified text
+    - Multiple export formats for digital integration
+    
     ## Features
     
     - **🎯 Medical-grade Accuracy**: Powered by Gemini 2.5 Flash with specialized medical knowledge
@@ -66,13 +76,14 @@ st.markdown(
     - **💾 Export Capabilities**: Download results in multiple formats
     - **🖼️ Image Understanding**: Advanced OCR and document analysis
     - **✅ Interactive Selection**: User-friendly checkbox interface for code selection
+    - **📝 Handwriting Recognition**: Convert handwritten notes to digital text
     
     ## Getting Started
     
     1. **Set up your API key**: Ensure you have a valid `GEMINI_API_KEY` in your environment
     2. **Choose a demo**: Select from the available demonstrations in the sidebar
-    3. **Upload or input**: Provide your medical audio, text content, invoice images, or select ICD codes
-    4. **Get results**: Receive professional-grade transcriptions, codes, data extraction, and code selections
+    3. **Upload or input**: Provide your medical audio, text content, invoice images, handwritten notes, or select ICD codes
+    4. **Get results**: Receive professional-grade transcriptions, codes, data extraction, code selections, and text conversion
     
     ## About the Technology
     
@@ -84,6 +95,7 @@ st.markdown(
     - Producing structured JSON output for integration
     - Advanced image understanding and document processing
     - Intelligent code selection with clinical reasoning
+    - Handwriting recognition and text extraction from images
     
     ### Want to learn more?
     - Read about [Med-Gemini capabilities](https://research.google/blog/advancing-medical-ai-with-med-gemini/)

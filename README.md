@@ -37,6 +37,15 @@ A multipage Streamlit application showcasing cutting-edge AI capabilities for he
 - **Comprehensive Coverage**: Codes across 10 major medical categories
 - **Export Options**: JSON, CSV, and summary report downloads
 
+### 📝 Paper to Patient Note Demo
+- **Advanced Handwriting Recognition**: AI-powered OCR specialized for medical handwriting
+- **Medical Terminology Focus**: Accurate extraction of medical terms, drug names, and abbreviations
+- **Multiple Output Formats**: Structured JSON analysis or clean text extraction
+- **Quality Assessment**: Legibility scoring and confidence evaluation for extracted text
+- **Structure Preservation**: Maintain original formatting and identify note sections
+- **Correction Tracking**: Identify and note crossed-out or corrected text
+- **Digital Integration**: Export options for EHR systems and digital workflows
+
 ## Prerequisites
 
 - Python 3.8 or higher
@@ -157,6 +166,27 @@ The application will open in your default web browser at `http://localhost:8501`
    - Check primary vs. secondary diagnosis categorization
    - Download analysis as JSON, CSV, or summary report
 
+### Paper to Patient Note Demo
+
+1. **Navigate to the Paper to Patient Note page** using the sidebar
+2. **Upload handwritten note image**:
+   - Supported formats: PNG, JPG, JPEG, WEBP, HEIC, HEIF
+   - Maximum file size: 20MB
+   - Ensure clear, well-lit images for best OCR results
+   - Include full page boundaries in the image
+
+3. **Configure conversion options**:
+   - Choose output format: Structured JSON analysis or Raw text
+   - Select structure preservation: Maintain original layout vs. clean formatting
+   - Review image preview and file information
+
+4. **Review conversion results**:
+   - View extracted text with quality assessment metrics
+   - Check legibility scores and confidence levels
+   - Examine identified sections and medical terminology
+   - Review annotations, corrections, and formatting suggestions
+   - Download extracted text, analysis, or summary reports
+
 ## Features Showcase
 
 ### Audio Processing Capabilities
@@ -193,6 +223,15 @@ The application will open in your default web browser at `http://localhost:8501`
 - **Clinical Reasoning**: Detailed explanations for why each code was selected or rejected
 - **Confidence Assessment**: High/Medium/Low confidence scoring for reliability
 - **Category Classification**: Primary/Secondary/Comorbidity designation for each code
+
+### Handwriting Recognition Features
+- **Medical-Specialized OCR**: Advanced text extraction optimized for medical handwriting
+- **Terminology Understanding**: Accurate recognition of medical terms, drug names, and abbreviations
+- **Quality Assessment**: Comprehensive evaluation of legibility, ink clarity, and paper condition
+- **Structure Analysis**: Automatic identification of note sections and formatting preservation
+- **Correction Detection**: Recognition and tracking of crossed-out or modified text
+- **Multiple Output Formats**: Structured JSON analysis or clean text extraction options
+- **Digital Integration**: Export capabilities for EHR systems and electronic workflows
 
 ## Technical Specifications
 
@@ -258,6 +297,15 @@ The application will open in your default web browser at `http://localhost:8501`
 - **Coding Efficiency**: Speed up the coding process with pre-filtered relevant codes
 - **Quality Assurance**: Ensure comprehensive code coverage for complex cases
 - **Educational Support**: Learn clinical reasoning behind code selections
+
+### Handwriting Recognition Applications
+- **Digital Transformation**: Convert paper-based medical records to digital format
+- **EHR Integration**: Prepare handwritten notes for electronic health record systems
+- **Backup Documentation**: Create searchable digital copies of handwritten notes
+- **Quality Improvement**: Standardize and improve readability of medical documentation
+- **Accessibility Enhancement**: Make handwritten content accessible to screen readers
+- **Archival Systems**: Digitize historical medical records for long-term storage
+- **Mobile Documentation**: Process photos of handwritten notes taken with mobile devices
 
 ### Financial and Administrative Applications
 - **Healthcare Billing**: Process medical service invoices
@@ -333,6 +381,9 @@ Potential additions for future versions:
 - Medical entity recognition
 - Receipt and expense categorization
 - Integration with accounting systems
+- Handwriting style analysis and authentication
+- Batch image processing for multiple notes
+- Real-time handwriting recognition via camera
 
 ## License
 
