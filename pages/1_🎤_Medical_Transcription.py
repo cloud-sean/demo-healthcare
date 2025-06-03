@@ -176,30 +176,32 @@ if not client:
     st.stop()
 
 # Create tabs for different input methods
-tab1, tab2, tab3, tab4 = st.tabs(["🎵 Audio Upload", "🎙️ Voice Recording", "📝 Text Input", "🔄 Combined Input"])
+tab1, tab2, tab3 = st.tabs(["🎵 Audio Upload", "📝 Text Input", "🔄 Combined Input"])
 
 with tab1:
     st.subheader("Audio File Transcription")
-    st.write("Upload an audio file for medical transcription with speaker diarization.")
+    st.write("Upload an audio file or record directly for medical transcription with speaker diarization.")
     
-    # Audio file uploader
-    audio_file = st.file_uploader(
-        "Choose an audio file",
-        type=['wav', 'mp3', 'm4a', 'flac', 'ogg', 'webm'],
-        help="Supported formats: WAV, MP3, M4A, FLAC, OGG, WEBM (Max: 25MB per file)"
-    )
+    # Create two columns for upload and record
+    upload_col, record_col = st.columns(2)
     
-    if audio_file is not None:
-        st.audio(audio_file, format='audio/wav')
+    with upload_col:
+        st.markdown("#### 📁 Upload Audio File")
+        # Audio file uploader
+        audio_file = st.file_uploader(
+            "Choose an audio file",
+            type=['wav', 'mp3', 'm4a', 'flac', 'ogg', 'webm'],
+            help="Supported formats: WAV, MP3, M4A, FLAC, OGG, WEBM (Max: 25MB per file)"
+        )
         
-        # Show file info
-        file_size = len(audio_file.getvalue()) / (1024 * 1024)  # Size in MB
-        st.info(f"📁 **File**: {audio_file.name} | **Size**: {file_size:.2f} MB")
-        
-        col1, col2 = st.columns([1, 4])
-        
-        with col1:
-            if st.button("🎤 Transcribe Audio", type="primary"):
+        if audio_file is not None:
+            st.audio(audio_file, format='audio/wav')
+            
+            # Show file info
+            file_size = len(audio_file.getvalue()) / (1024 * 1024)  # Size in MB
+            st.info(f"📁 **File**: {audio_file.name} | **Size**: {file_size:.2f} MB")
+            
+            if st.button("🎤 Transcribe Uploaded Audio", type="primary", key="upload_transcribe"):
                 with st.spinner("Transcribing audio... This may take a moment."):
                     # Reset file pointer
                     audio_file.seek(0)
@@ -214,230 +216,43 @@ with tab1:
                         st.session_state.transcription_result = result
                         st.session_state.usage_metadata = usage_metadata
                         st.success("✅ Transcription completed!")
+    
+    with record_col:
+        st.markdown("#### 🎙️ Record Audio")
+        # Audio recording input
+        recorded_audio = st.audio_input(
+            "Record a medical conversation",
+            help="Click to start recording. Click again to stop. Maximum recording time depends on your browser settings."
+        )
         
-        with col2:
-            st.info("💡 **Tip**: For best results, ensure clear audio with minimal background noise.")
-
-with tab2:
-    st.subheader("🎙️ Live Voice Recording")
-    st.write("Record conversations, dictations, or medical notes directly in your browser.")
-    
-    # Voice recording interface with HTML/JavaScript
-    st.markdown("""
-    <div id="voice-recorder" style="padding: 20px; border: 2px dashed #cccccc; border-radius: 10px; text-align: center;">
-        <h4>🎤 Medical Voice Recorder</h4>
-        <p id="recording-status">Click 'Start Recording' to begin</p>
-        <div style="margin: 20px 0;">
-            <button id="start-btn" onclick="startRecording()" style="background-color: #ff4b4b; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin: 0 10px; cursor: pointer;">
-                🔴 Start Recording
-            </button>
-            <button id="stop-btn" onclick="stopRecording()" style="background-color: #262730; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin: 0 10px; cursor: pointer;" disabled>
-                ⏹️ Stop Recording
-            </button>
-            <button id="clear-btn" onclick="clearRecording()" style="background-color: #666; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin: 0 10px; cursor: pointer;" disabled>
-                🗑️ Clear
-            </button>
-        </div>
-        <div id="recording-timer" style="font-size: 24px; font-weight: bold; color: #ff4b4b; margin: 10px 0; display: none;">
-            00:00
-        </div>
-        <audio id="recorded-audio" controls style="width: 100%; margin: 20px 0; display: none;"></audio>
-        <div id="download-section" style="margin: 20px 0; display: none;">
-            <button id="transcribe-btn" onclick="transcribeRecording()" style="background-color: #00cc88; color: white; border: none; padding: 12px 24px; border-radius: 5px; margin: 0 10px; cursor: pointer; font-weight: bold;">
-                🎤➡️📝 Transcribe Recording
-            </button>
-        </div>
-    </div>
-    
-    <script>
-    let mediaRecorder;
-    let recordedChunks = [];
-    let isRecording = false;
-    let recordingTimer;
-    let recordingStartTime;
-    let recordedBlob = null;
-    
-    async function startRecording() {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ 
-                audio: {
-                    echoCancellation: true,
-                    noiseSuppression: true,
-                    sampleRate: 44100,
-                    channelCount: 1
-                } 
-            });
+        if recorded_audio is not None:
+            st.audio(recorded_audio, format='audio/wav')
             
-            mediaRecorder = new MediaRecorder(stream, {
-                mimeType: 'audio/webm;codecs=opus'
-            });
+            # Show recording info
+            recording_size = len(recorded_audio.getvalue()) / (1024 * 1024)  # Size in MB
+            st.info(f"🎙️ **Recording**: {recording_size:.2f} MB")
             
-            recordedChunks = [];
-            
-            mediaRecorder.ondataavailable = function(event) {
-                if (event.data.size > 0) {
-                    recordedChunks.push(event.data);
-                }
-            };
-            
-            mediaRecorder.onstop = function() {
-                recordedBlob = new Blob(recordedChunks, { type: 'audio/webm' });
-                const audioUrl = URL.createObjectURL(recordedBlob);
-                
-                const audioElement = document.getElementById('recorded-audio');
-                audioElement.src = audioUrl;
-                audioElement.style.display = 'block';
-                
-                document.getElementById('download-section').style.display = 'block';
-                document.getElementById('clear-btn').disabled = false;
-                
-                // Stop all tracks to release microphone
-                stream.getTracks().forEach(track => track.stop());
-            };
-            
-            mediaRecorder.start(1000); // Collect data every second
-            isRecording = true;
-            recordingStartTime = Date.now();
-            
-            document.getElementById('start-btn').disabled = true;
-            document.getElementById('stop-btn').disabled = false;
-            document.getElementById('recording-status').textContent = '🔴 Recording in progress...';
-            document.getElementById('recording-timer').style.display = 'block';
-            
-            // Start timer
-            recordingTimer = setInterval(updateTimer, 1000);
-            
-        } catch (error) {
-            console.error('Error accessing microphone:', error);
-            document.getElementById('recording-status').textContent = '❌ Error: Could not access microphone. Please allow microphone access and try again.';
-        }
-    }
-    
-    function stopRecording() {
-        if (mediaRecorder && isRecording) {
-            mediaRecorder.stop();
-            isRecording = false;
-            
-            document.getElementById('start-btn').disabled = false;
-            document.getElementById('stop-btn').disabled = true;
-            document.getElementById('recording-status').textContent = '✅ Recording completed! You can now play it back or transcribe it.';
-            document.getElementById('recording-timer').style.display = 'none';
-            
-            clearInterval(recordingTimer);
-        }
-    }
-    
-    function clearRecording() {
-        const audioElement = document.getElementById('recorded-audio');
-        audioElement.src = '';
-        audioElement.style.display = 'none';
-        
-        document.getElementById('download-section').style.display = 'none';
-        document.getElementById('clear-btn').disabled = true;
-        document.getElementById('recording-status').textContent = 'Click \\'Start Recording\\' to begin';
-        document.getElementById('recording-timer').textContent = '00:00';
-        
-        recordedChunks = [];
-        recordedBlob = null;
-    }
-    
-    function updateTimer() {
-        if (isRecording) {
-            const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
-            const minutes = Math.floor(elapsed / 60);
-            const seconds = elapsed % 60;
-            document.getElementById('recording-timer').textContent = 
-                String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
-        }
-    }
-    
-    function transcribeRecording() {
-        if (recordedBlob) {
-            // Create a File object from the blob
-            const audioFile = new File([recordedBlob], 'recorded_audio.webm', { type: 'audio/webm' });
-            
-            // Store the audio file in a way that Streamlit can access
-            // We'll use a custom event to communicate with Streamlit
-            const event = new CustomEvent('audioRecorded', {
-                detail: { audioBlob: recordedBlob }
-            });
-            
-            // Set a flag that Streamlit can check
-            window.recordedAudioReady = true;
-            window.recordedAudioBlob = recordedBlob;
-            
-            document.getElementById('recording-status').textContent = '🔄 Preparing audio for transcription...';
-            
-            // Trigger Streamlit rerun by clicking a hidden button
-            setTimeout(() => {
-                if (window.streamlitRerun) {
-                    window.streamlitRerun();
-                }
-            }, 100);
-        }
-    }
-    </script>
-    """, unsafe_allow_html=True)
-    
-    # Alternative approach: Manual file upload after recording
-    st.markdown("### 📤 Upload Your Recording")
-    st.write("After recording above, save your audio and upload it here for transcription:")
-    
-    recorded_audio_file = st.file_uploader(
-        "Upload recorded audio",
-        type=['webm', 'wav', 'mp3', 'm4a', 'ogg'],
-        help="Record using the interface above, then save and upload the file here",
-        key="recorded_audio_upload"
-    )
-    
-    if recorded_audio_file is not None:
-        st.audio(recorded_audio_file, format='audio/wav')
-        
-        # Show file info
-        file_size = len(recorded_audio_file.getvalue()) / (1024 * 1024)  # Size in MB
-        st.info(f"📁 **File**: {recorded_audio_file.name} | **Size**: {file_size:.2f} MB")
-        
-        col1, col2 = st.columns([1, 4])
-        
-        with col1:
-            if st.button("🎤 Transcribe Recording", type="primary", key="transcribe_recording"):
-                with st.spinner("Transcribing your recording... This may take a moment."):
+            if st.button("🎤 Transcribe Recording", type="primary", key="record_transcribe"):
+                with st.spinner("Transcribing recording... This may take a moment."):
                     # Reset file pointer
-                    recorded_audio_file.seek(0)
+                    recorded_audio.seek(0)
                     
                     result, usage_metadata = generate_medical_transcription(
                         client, 
-                        audio_file=recorded_audio_file, 
+                        audio_file=recorded_audio, 
                         content_type="audio"
                     )
                     
                     if result:
                         st.session_state.transcription_result = result
                         st.session_state.usage_metadata = usage_metadata
-                        st.success("✅ Recording transcribed successfully!")
-        
-        with col2:
-            st.info("💡 **Tip**: Your recording is ready for transcription. Click the button to process it.")
+                        st.success("✅ Transcription completed!")
     
-    # Instructions and tips
-    st.markdown("### 💡 Recording Tips:")
-    st.info("""
-    - **🎧 Use headphones** to prevent audio feedback
-    - **🔇 Find a quiet environment** for better transcription accuracy
-    - **🗣️ Speak clearly** and at a moderate pace
-    - **📏 Keep recordings under 10 minutes** for optimal processing
-    - **🔊 Check your microphone levels** before important recordings
-    """)
-    
-    st.markdown("### 🔒 Privacy & Security:")
-    st.warning("""
-    - All recordings are processed locally in your browser
-    - Audio data is only sent to Gemini API for transcription
-    - No recordings are permanently stored on our servers
-    - For production use, ensure HIPAA compliance measures
-    """)
+    # Tips section
+    st.markdown("---")
+    st.info("💡 **Tips for Best Results**: Ensure clear audio with minimal background noise. For recordings, speak clearly and maintain consistent distance from the microphone.")
 
-with tab3:
+with tab2:
     st.subheader("Text Analysis & Enhancement")
     st.write("Input medical text for analysis, formatting, and enhancement.")
     
@@ -467,18 +282,37 @@ with tab3:
         with col2:
             st.info("💡 **Tip**: Include patient symptoms, medical history, and any clinical observations.")
 
-with tab4:
+with tab3:
     st.subheader("Combined Audio & Text Processing")
-    st.write("Upload audio and provide additional text context for comprehensive analysis.")
+    st.write("Upload/record audio and provide additional text context for comprehensive analysis.")
     
-    # Audio input
-    combined_audio = st.file_uploader(
-        "Audio file",
-        type=['wav', 'mp3', 'm4a', 'flac', 'ogg', 'webm'],
-        key="combined_audio"
+    # Audio input options
+    st.markdown("#### 🎵 Audio Input")
+    audio_option = st.radio(
+        "Choose audio input method:",
+        ["Upload File", "Record Audio"],
+        key="combined_audio_option",
+        horizontal=True
     )
     
+    combined_audio = None
+    if audio_option == "Upload File":
+        combined_audio = st.file_uploader(
+            "Audio file",
+            type=['wav', 'mp3', 'm4a', 'flac', 'ogg', 'webm'],
+            key="combined_audio_upload"
+        )
+    else:  # Record Audio
+        combined_audio = st.audio_input(
+            "Record audio for analysis",
+            key="combined_audio_record"
+        )
+    
+    if combined_audio is not None:
+        st.audio(combined_audio, format='audio/wav')
+    
     # Text input
+    st.markdown("#### 📝 Text Context")
     combined_text = st.text_area(
         "Additional context or notes:",
         height=150,
@@ -549,13 +383,12 @@ if hasattr(st.session_state, 'transcription_result') and st.session_state.transc
 with st.sidebar:
     st.markdown("### 🎯 Features")
     st.markdown("""
-    - **🎤 Audio Transcription**: Upload medical audio files
-    - **🎙️ Live Recording**: Record conversations directly in browser
+    - **🎤 Audio Transcription**: Upload or record medical audio
+    - **🎙️ Live Recording**: Record conversations directly
     - **👥 Speaker Diarization**: Identify different speakers
     - **📝 Text Enhancement**: Improve medical documentation
     - **🔄 Multi-modal**: Combine audio and text inputs
     - **⚡ Real-time**: Fast processing with Gemini 2.5 Flash
-    - **📊 Token Tracking**: Monitor API usage and costs
     """)
     
     st.markdown("### 📊 Supported Formats")
