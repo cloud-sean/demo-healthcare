@@ -138,6 +138,8 @@ def generate_medical_transcription(client, audio_file=None, text_content=None, c
         status_text = st.empty()
         
         chunks_received = 0
+        usage_metadata = None
+        
         for chunk in client.models.generate_content_stream(
             model=model,
             contents=contents,
@@ -151,18 +153,22 @@ def generate_medical_transcription(client, audio_file=None, text_content=None, c
                 progress = min(chunks_received * 0.1, 0.9)
                 progress_bar.progress(progress)
                 status_text.text(f"Processing... {len(response_text)} characters generated")
+            
+            # Capture usage metadata from the chunk if available
+            if hasattr(chunk, 'usage_metadata') and chunk.usage_metadata:
+                usage_metadata = chunk.usage_metadata
         
         progress_bar.progress(1.0)
         status_text.text("Complete!")
         time.sleep(0.5)  # Brief pause to show completion
         progress_bar.empty()
         status_text.empty()
-                
-        return response_text
+        
+        return response_text, usage_metadata
         
     except Exception as e:
         st.error(f"Error generating transcription: {str(e)}")
-        return None
+        return None, None
 
 # Initialize client
 client = get_gemini_client()
@@ -198,7 +204,7 @@ with tab1:
                     # Reset file pointer
                     audio_file.seek(0)
                     
-                    result = generate_medical_transcription(
+                    result, usage_metadata = generate_medical_transcription(
                         client, 
                         audio_file=audio_file, 
                         content_type="audio"
@@ -206,6 +212,7 @@ with tab1:
                     
                     if result:
                         st.session_state.transcription_result = result
+                        st.session_state.usage_metadata = usage_metadata
                         st.success("✅ Transcription completed!")
         
         with col2:
@@ -227,7 +234,7 @@ with tab2:
         with col1:
             if st.button("📝 Analyze Text", type="primary"):
                 with st.spinner("Analyzing medical text..."):
-                    result = generate_medical_transcription(
+                    result, usage_metadata = generate_medical_transcription(
                         client,
                         text_content=text_input,
                         content_type="text"
@@ -235,6 +242,7 @@ with tab2:
                     
                     if result:
                         st.session_state.transcription_result = result
+                        st.session_state.usage_metadata = usage_metadata
                         st.success("✅ Analysis completed!")
         
         with col2:
@@ -268,7 +276,7 @@ with tab3:
                     if combined_audio:
                         combined_audio.seek(0)
                     
-                    result = generate_medical_transcription(
+                    result, usage_metadata = generate_medical_transcription(
                         client,
                         audio_file=combined_audio if combined_audio else None,
                         text_content=combined_text if combined_text else None,
@@ -277,6 +285,7 @@ with tab3:
                     
                     if result:
                         st.session_state.transcription_result = result
+                        st.session_state.usage_metadata = usage_metadata
                         st.success("✅ Processing completed!")
         
         with col2:
@@ -286,6 +295,16 @@ with tab3:
 if hasattr(st.session_state, 'transcription_result') and st.session_state.transcription_result:
     st.markdown("---")
     st.subheader("📋 Medical Transcription Results")
+    
+    # Display token usage information if available
+    if hasattr(st.session_state, 'usage_metadata') and st.session_state.usage_metadata:
+        usage = st.session_state.usage_metadata
+        st.info(f"""
+        📊 **Token Usage:**
+        - **Input tokens**: {usage.prompt_token_count:,}
+        - **Output tokens**: {usage.candidates_token_count:,}
+        - **Total tokens**: {usage.total_token_count:,}
+        """)
     
     # Create expandable sections for better organization
     with st.expander("📝 Full Transcription", expanded=True):
@@ -303,6 +322,8 @@ if hasattr(st.session_state, 'transcription_result') and st.session_state.transc
     if st.button("🗑️ Clear Results"):
         if 'transcription_result' in st.session_state:
             del st.session_state.transcription_result
+        if 'usage_metadata' in st.session_state:
+            del st.session_state.usage_metadata
         st.rerun()
 
 # Sidebar information
